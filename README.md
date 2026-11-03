@@ -14,11 +14,18 @@ ClipboardListener.
 | **Auto-capture** toggle: add everything copied anywhere in Windows, or pause | Ctrl+Shift+A |
 | **Paste entry**: add the clipboard as a new entry at the end (works while paused) | Ctrl+Shift+V |
 | **Always on top** (pin button) | Ctrl+Shift+T |
+| **Preview**: formatted Markdown beside the editor, updated as you type | Ctrl+Shift+P |
+| **PDF**: export the formatted document as a PDF | Ctrl+P |
 | New / Open / Save / Save as | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |
 
 - Entries are separated by a blank line, or by a `---` rule (*More* menu)
-- Text copied from the editor itself is never captured again; a duplicate update within one
-  second (some "copy" buttons fire twice) is ignored
+- Copies made while ClipboardCollector is in front (from the editor, the preview or a dialog)
+  are never captured; a duplicate update within one second (some "copy" buttons fire twice)
+  is ignored
+- Preview and PDF use [Markdig](https://github.com/xoofx/markdig) to turn the Markdown into
+  HTML, and the Edge WebView2 runtime (built into Windows 11) to show and print it. Raw HTML
+  in the text is shown as text, never run; links in the preview open in your browser. The
+  preview follows the Windows theme, the PDF is always light.
 - Asks before discarding unsaved changes; the title shows `●` while there are any
 - Remembers the toggles, the separator choice, window position and the last folder in
   `%LocalAppData%\ClipboardCollector\settings.json`

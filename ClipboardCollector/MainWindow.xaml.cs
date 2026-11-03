@@ -1,10 +1,12 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-
+using System.Windows.Threading;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
 using Velopack;
 using Velopack.Sources;
@@ -16,6 +18,8 @@ public partial class MainWindow : Window
     public static readonly RoutedUICommand PasteEntry = new("Paste entry", nameof(PasteEntry), typeof(MainWindow));
     public static readonly RoutedUICommand ToggleCapture = new("Toggle auto-capture", nameof(ToggleCapture), typeof(MainWindow));
     public static readonly RoutedUICommand ToggleTopmost = new("Toggle always on top", nameof(ToggleTopmost), typeof(MainWindow));
+    public static readonly RoutedUICommand TogglePreview = new("Toggle preview", nameof(TogglePreview), typeof(MainWindow));
+    public static readonly RoutedUICommand ExportPdf = new("Export as PDF", nameof(ExportPdf), typeof(MainWindow));
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool AddClipboardFormatListener(IntPtr hwnd);
@@ -28,6 +32,9 @@ public partial class MainWindow : Window
 
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
 
     private const int WM_CLIPBOARDUPDATE = 0x031D;
 
@@ -49,6 +56,11 @@ public partial class MainWindow : Window
     // Some apps (browsers' "copy" buttons in particular) raise several updates for one copy
     private string? _lastCaptured;
     private DateTime _lastCapturedAt;
+
+    private readonly DispatcherTimer _previewTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
+    private double _previewScrollY;
+    private bool _previewFollowEnd = true;
+    private string? _previewTempFile;
 
     public MainWindow()
     {
@@ -78,6 +90,12 @@ public partial class MainWindow : Window
         UpdateTopmostUi();
         UpdateTitle();
         UpdateCounts();
+
+        _previewTimer.Tick += async (_, _) =>
+        {
+            _previewTimer.Stop();
+            await RenderPreviewAsync();
+        };
     }
 
     private static bool IsOnScreen(double left, double top) =>
@@ -86,7 +104,12 @@ public partial class MainWindow : Window
         left < SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 100 &&
         top < SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 100;
 
-    private void Window_Loaded(object sender, RoutedEventArgs e) => Editor.Focus();
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Only now, so the WebView2 has a window to live in
+        PreviewToggle.IsChecked = _settings.ShowPreview;
+        Editor.Focus();
+    }
 
     #region Clipboard listener
 
@@ -105,6 +128,8 @@ public partial class MainWindow : Window
             RemoveClipboardFormatListener(_hwndSource.Handle);
             _hwndSource.RemoveHook(WndProc);
         }
+        if (_previewTempFile != null)
+            try { File.Delete(_previewTempFile); } catch (IOException) { }
         base.OnClosed(e);
     }
 
@@ -125,13 +150,17 @@ public partial class MainWindow : Window
         return IntPtr.Zero;
     }
 
-    // Copying from the editor itself must not append the selection again
-    private static bool IsOwnClipboard()
+    // Copying from the editor or the preview must not append the selection again. The preview
+    // copies from a WebView2 child process, so also treat any copy made while one of our windows
+    // (main window or a dialog) is in front as ours.
+    private static bool IsOwnClipboard() =>
+        IsOwnWindow(GetForegroundWindow()) || IsOwnWindow(GetClipboardOwner());
+
+    private static bool IsOwnWindow(IntPtr hwnd)
     {
-        var owner = GetClipboardOwner();
-        if (owner == IntPtr.Zero)
+        if (hwnd == IntPtr.Zero)
             return false;
-        GetWindowThreadProcessId(owner, out var pid);
+        GetWindowThreadProcessId(hwnd, out var pid);
         return pid == Environment.ProcessId;
     }
 
@@ -199,6 +228,13 @@ public partial class MainWindow : Window
             UpdateTitle();
         }
         UpdateCounts();
+
+        if (PreviewToggle.IsChecked == true)
+        {
+            // Re-render once typing pauses rather than on every keystroke
+            _previewTimer.Stop();
+            _previewTimer.Start();
+        }
     }
 
     private void SetText(string text, string? file)
@@ -268,6 +304,164 @@ public partial class MainWindow : Window
         menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
         menu.IsOpen = true;
     }
+
+    #endregion
+
+    #region Preview and PDF
+
+    private async void PreviewToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        var show = PreviewToggle.IsChecked == true;
+        _settings.ShowPreview = show;
+        _settings.Save();
+
+        SplitterColumn.Width = show ? GridLength.Auto : new GridLength(0);
+        PreviewColumn.Width = show ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+        PreviewColumn.MinWidth = show ? 200 : 0;
+        PreviewSplitter.Visibility = PreviewBorder.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!show)
+        {
+            _previewTimer.Stop();
+            return;
+        }
+
+        if (!await EnsurePreviewAsync())
+        {
+            PreviewToggle.IsChecked = false;
+            return;
+        }
+        await RenderPreviewAsync();
+    }
+
+    private void TogglePreview_Executed(object sender, ExecutedRoutedEventArgs e) =>
+        PreviewToggle.IsChecked = PreviewToggle.IsChecked != true;
+
+    /// <returns>false if WebView2 is unavailable</returns>
+    private async Task<bool> EnsurePreviewAsync()
+    {
+        if (PreviewView.CoreWebView2 != null)
+            return true;
+
+        try
+        {
+            await PreviewView.EnsureCoreWebView2Async(await WebViewHost.GetEnvironmentAsync());
+        }
+        catch (WebView2RuntimeNotFoundException)
+        {
+            ShowWebView2Missing();
+            return false;
+        }
+
+        var webView = PreviewView.CoreWebView2!;
+        webView.Settings.AreDevToolsEnabled = false;
+        webView.Settings.AreDefaultContextMenusEnabled = true; // keeps Copy
+        webView.Settings.IsStatusBarEnabled = false;
+        // Links open in the default browser instead of replacing the preview
+        webView.NavigationStarting += (_, args) =>
+        {
+            if (Uri.TryCreate(args.Uri, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https" or "mailto")
+            {
+                args.Cancel = true;
+                Process.Start(new ProcessStartInfo(args.Uri) { UseShellExecute = true });
+            }
+        };
+        webView.NewWindowRequested += (_, args) =>
+        {
+            args.Handled = true;
+            Process.Start(new ProcessStartInfo(args.Uri) { UseShellExecute = true });
+        };
+        webView.NavigationCompleted += async (_, _) =>
+        {
+            // Keep the reader's place across re-renders; follow new entries when at the end
+            var script = _previewFollowEnd
+                ? "window.scrollTo(0, document.body.scrollHeight)"
+                : $"window.scrollTo(0, {_previewScrollY.ToString(System.Globalization.CultureInfo.InvariantCulture)})";
+            await webView.ExecuteScriptAsync(script);
+        };
+        return true;
+    }
+
+    private async Task RenderPreviewAsync()
+    {
+        var webView = PreviewView.CoreWebView2;
+        if (webView == null)
+            return;
+
+        var scroll = await webView.ExecuteScriptAsync(
+            "JSON.stringify([window.scrollY, window.innerHeight + window.scrollY >= document.body.scrollHeight - 4])");
+        // ExecuteScriptAsync returns the JSON of the JSON string, so decode twice
+        if (System.Text.Json.JsonSerializer.Deserialize<string>(scroll) is { } json &&
+            System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement[]>(json) is [var y, var atEnd])
+        {
+            _previewScrollY = y.GetDouble();
+            _previewFollowEnd = atEnd.GetBoolean() || Editor.CaretIndex >= Editor.Text.Length;
+        }
+
+        var html = MarkdownHtml.ToHtml(Editor.Text, DocumentTitle, forPrint: false);
+        // NavigateToString is limited to 2 MB; huge collections go through a temp file
+        if (html.Length < 1_000_000)
+        {
+            webView.NavigateToString(html);
+        }
+        else
+        {
+            _previewTempFile ??= Path.Combine(Path.GetTempPath(), $"ClipboardCollector_preview_{Environment.ProcessId}.html");
+            await File.WriteAllTextAsync(_previewTempFile, html);
+            webView.Navigate(new Uri(_previewTempFile).AbsoluteUri);
+        }
+    }
+
+    private async void ExportPdf_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(Editor.Text))
+        {
+            CaptureStatus.Text = "Nothing to export yet";
+            return;
+        }
+
+        var sfd = new SaveFileDialog
+        {
+            Filter = "PDF Files (*.pdf)|*.pdf",
+            Title = "Export as PDF",
+            FileName = Path.GetFileNameWithoutExtension(_currentFile) ?? $"clipboard_{DateTime.Now:yyyy-MM-dd_HHmm}",
+            InitialDirectory = _currentFile != null ? Path.GetDirectoryName(_currentFile) : _settings.LastSaveDirectory,
+        };
+        if (sfd.ShowDialog(this) != true)
+            return;
+
+        ExportPdfButton.IsEnabled = false;
+        CaptureStatus.Text = "Exporting PDF…";
+        try
+        {
+            var html = MarkdownHtml.ToHtml(Editor.Text, DocumentTitle, forPrint: true);
+            await WebViewHost.ExportPdfAsync(html, sfd.FileName, _hwndSource!.Handle);
+            CaptureStatus.Text = $"Exported {Path.GetFileName(sfd.FileName)} at {DateTime.Now:HH:mm}";
+        }
+        catch (WebView2RuntimeNotFoundException)
+        {
+            ShowWebView2Missing();
+            UpdateCaptureUi();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or COMException)
+        {
+            MessageBox.Show(this, $"Could not export the PDF:\n{ex.Message}", "Export as PDF", MessageBoxButton.OK, MessageBoxImage.Error);
+            UpdateCaptureUi();
+        }
+        finally
+        {
+            ExportPdfButton.IsEnabled = true;
+        }
+    }
+
+    private string DocumentTitle =>
+        _currentFile != null ? Path.GetFileNameWithoutExtension(_currentFile) : "Clipboard collection";
+
+    private void ShowWebView2Missing() =>
+        MessageBox.Show(this,
+            "This needs the Microsoft Edge WebView2 Runtime, which is part of Windows 11 but appears to be missing.\n\n" +
+            "Install it from https://go.microsoft.com/fwlink/p/?LinkId=2124703 and try again.",
+            "WebView2 not found", MessageBoxButton.OK, MessageBoxImage.Warning);
 
     #endregion
 
