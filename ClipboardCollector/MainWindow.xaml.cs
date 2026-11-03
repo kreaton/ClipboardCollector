@@ -45,7 +45,7 @@ public partial class MainWindow : Window
 
     private readonly UpdateManager _updateManager = new(new GithubSource(RepoUrl, accessToken: null, prerelease: false));
     private readonly AppSettings _settings = AppSettings.Load();
-    private readonly string _baseTitle = "ClipboardCollector";
+    private const string _baseTitle = "ClipboardCollector";
 
     private HwndSource? _hwndSource;
     private string? _currentFile;
@@ -66,9 +66,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // CurrentVersion is null when running from Visual Studio rather than an installed copy
-        if (_updateManager.CurrentVersion is { } version)
-            _baseTitle += $" {version}";
+        VersionStatus.Text = "v" + BuildInfo.Version;
+        VersionStatus.ToolTip = BuildInfo.Display;
 
         Width = _settings.Width;
         Height = _settings.Height;
@@ -584,13 +583,8 @@ public partial class MainWindow : Window
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e) => Close();
 
-    private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        var version = _updateManager.CurrentVersion?.ToString() ?? "development build";
-        MessageBox.Show(this,
-            $"ClipboardCollector {version}\n\nCollects text you copy into one Markdown document.\n{RepoUrl}",
-            "About ClipboardCollector", MessageBoxButton.OK, MessageBoxImage.Information);
-    }
+    private void AboutMenuItem_Click(object sender, RoutedEventArgs e) =>
+        new AboutWindow(RepoUrl) { Owner = this }.ShowDialog();
 
     private async void UpdateMenuItem_Click(object sender, RoutedEventArgs e)
     {

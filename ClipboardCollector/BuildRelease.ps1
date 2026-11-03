@@ -24,24 +24,25 @@ if (-not $LocalOnly) {
     if ($LASTEXITCODE -ne 0) { throw "vpk download failed" }
 }
 
-# Find the highest version already packed (releases.win.json is written by vpk)
+# Major.Minor comes from Directory.Build.props; the patch is one higher than the last release
+# with that Major.Minor (releases.win.json is written by vpk), or 0 for the first one.
+$majorMinor = ([xml](Get-Content -Path "..\Directory.Build.props" -Raw)).Project.PropertyGroup.MajorMinor
+$buildNumber = 0
 $releasesFile = Join-Path $ReleasesDir "releases.win.json"
 if (Test-Path $releasesFile) {
-    $largestVersion = (Get-Content -Path $releasesFile -Raw | ConvertFrom-Json).Assets
+    $last = (Get-Content -Path $releasesFile -Raw | ConvertFrom-Json).Assets
         | Where-Object { $_.Type -eq 'Full' }
         | ForEach-Object { [version]$_.Version }
+        | Where-Object { "$($_.Major).$($_.Minor)" -eq $majorMinor }
         | Sort-Object -Descending
         | Select-Object -First 1
-    # Increment the patch number by 1
-    $newVersion = "{0}.{1}.{2}" -f $largestVersion.Major, $largestVersion.Minor, ($largestVersion.Build + 1)
+    if ($last) { $buildNumber = $last.Build + 1 }
 }
-else {
-    $newVersion = "1.0.0"
-}
+$newVersion = "$majorMinor.$buildNumber"
 
 Write-Host "Publishing $AppName version $newVersion (framework-dependent, win-x64)"
 if (Test-Path $PublishDir) { Remove-Item $PublishDir -Recurse -Force }
-dotnet publish -c Release -r win-x64 --self-contained false -p:Version=$newVersion -o $PublishDir
+dotnet publish -c Release -r win-x64 --self-contained false -p:BuildNumber=$buildNumber -o $PublishDir
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 
 Write-Host "Packing $AppName version $newVersion with Velopack"

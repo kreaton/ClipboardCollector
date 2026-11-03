@@ -38,9 +38,7 @@
             <Menu.ItemContainerStyle>
                 <!-- Top-level items only: the Fluent default is taller than Notepad's menu bar -->
                 <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-                    <Setter Property="Padding" Value="10,4" />
-                    <Setter Property="MinHeight" Value="0" />
-                    <Setter Property="Height" Value="32" />
+                    <Setter Property="Padding" Value="10,2" />
                 </Style>
             </Menu.ItemContainerStyle>
             <MenuItem Header="_File">
@@ -187,6 +185,8 @@
             <!-- Status bar -->
             <DockPanel Grid.Row="2" Margin="2,6,2,8">
                 <Ellipse x:Name="CaptureDot" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="VersionStatus" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="16,0,0,0"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                 <TextBlock x:Name="CountStatus" DockPanel.Dock="Right" VerticalAlignment="Center"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <TextBlock x:Name="CaptureStatus" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />

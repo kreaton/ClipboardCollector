@@ -31,7 +31,7 @@ narrow windows.
   in the text is shown as text, never run; links in the preview open in your browser. The
   preview follows the Windows theme, the PDF is always light.
 - Asks before discarding unsaved changes; the title shows `●` while there are any
-- Remembers the toggles, the separator choice, window position and the last folder in
+- Remembers the toggles, the preview, window position and the last folder in
   `%LocalAppData%\ClipboardCollector\settings.json`
 - Plain Ctrl+V still pastes at the cursor as normal
 
@@ -41,7 +41,20 @@ narrow windows.
 dotnet run --project ClipboardCollector
 ```
 
-Releases are built with `ClipboardCollector\BuildRelease.ps1`, exactly as described in the
+Releases are built with `ClipboardCollector\BuildRelease.ps1`, as described in the
 ClipboardListener README. It uploads to `https://github.com/kreaton/ClipboardCollector`,
-so that repo has to exist (and be public) before the first release and before
-*Check for updates* can work.
+which must stay public for *Check for updates* to work.
+
+### Versioning
+
+Versions look like **1.0.42**. The bottom right of the window shows the version; hover it,
+or open *Help → About*, for the full build, for example `v1.0.42 · 2026-11-03 19:30 · 30711c7`
+(version · build time · commit).
+
+- **Major.Minor** is set by hand in [`Directory.Build.props`](Directory.Build.props)
+  (`<MajorMinor>`). Raise it for bigger changes.
+- **The last number** is worked out by `BuildRelease.ps1`: one higher than the latest release
+  with the same Major.Minor, or 0 for the first. It is passed to the build as
+  `-p:BuildNumber=…`; local builds use 0.
+- **The commit** is added by the .NET SDK from git. The build time is stamped in by
+  `Directory.Build.props`, and `ClipboardCollector/BuildInfo.cs` puts it all together.

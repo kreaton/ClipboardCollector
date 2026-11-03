@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    Version: Major.Minor is set here by hand; the patch is passed in by BuildRelease.ps1 as
+    /p:BuildNumber=<n> (one higher than the last release) and stays 0 for local builds. The SDK
+    appends the git commit to InformationalVersion (1.0.42+<sha>), and the build time is stamped
+    below. The app reads all of it through BuildInfo; Velopack packs Major.Minor.BuildNumber.
+  -->
+  <PropertyGroup>
+    <MajorMinor>1.0</MajorMinor>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
+    <Version>$(MajorMinor).$(BuildNumber)</Version>
+    <!-- "s" is culture-invariant; a custom format would get the Danish "." time separator. -->
+    <BuildDate>$([System.DateTime]::UtcNow.ToString("s"))Z</BuildDate>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BuildDate</_Parameter1>
+      <_Parameter2>$(BuildDate)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
