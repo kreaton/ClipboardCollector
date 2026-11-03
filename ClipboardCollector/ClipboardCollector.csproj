@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Product>ClipboardCollector</Product>
+    <Copyright>Copyright © 2026</Copyright>
+    <!-- Overridden by BuildRelease.ps1 so the assembly version matches the Velopack package version -->
+    <Version>1.0.0</Version>
+    <!-- Velopack's Program.Main replaces the generated WPF entry point -->
+    <StartupObject>ClipboardCollector.Program</StartupObject>
+    <!-- WPF's Fluent theme (ThemeMode) is still flagged experimental -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+</Project>
