@@ -18,6 +18,10 @@ ClipboardListener.
 | **PDF**: export the formatted document as a PDF | Ctrl+P |
 | New / Open / Save / Save as | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |
 
+Everything is also in the classic **File / Edit / View / Help** menu bar, which is where
+*Save as*, *Check for updates* and *About* live. The toolbar wraps onto a second row in
+narrow windows.
+
 - Each new entry is separated from the previous one by a `---` Markdown rule
 - Copies made while ClipboardCollector is in front (from the editor, the preview or a dialog)
   are never captured; a duplicate update within one second (some "copy" buttons fire twice)

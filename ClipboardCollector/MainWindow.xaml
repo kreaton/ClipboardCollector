@@ -32,118 +32,165 @@
         <CommandBinding Command="{x:Static ApplicationCommands.SaveAs}" Executed="SaveAs_Executed" />
     </Window.CommandBindings>
 
-    <Grid Margin="12,8,12,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <DockPanel>
+        <!-- Classic menu bar, like Windows 11 Notepad -->
+        <Menu DockPanel.Dock="Top" Margin="6,2,6,0" Background="Transparent">
+            <Menu.ItemContainerStyle>
+                <!-- Top-level items only: the Fluent default is taller than Notepad's menu bar -->
+                <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                    <Setter Property="Padding" Value="10,4" />
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="Height" Value="32" />
+                </Style>
+            </Menu.ItemContainerStyle>
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" InputGestureText="Ctrl+N" Command="{x:Static ApplicationCommands.New}" />
+                <MenuItem Header="_Open…" InputGestureText="Ctrl+O" Command="{x:Static ApplicationCommands.Open}" />
+                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Command="{x:Static ApplicationCommands.Save}" />
+                <MenuItem Header="Save _as…" InputGestureText="Ctrl+Shift+S" Command="{x:Static ApplicationCommands.SaveAs}" />
+                <Separator />
+                <MenuItem Header="_Export as PDF…" InputGestureText="Ctrl+P" Command="{x:Static local:MainWindow.ExportPdf}" />
+                <Separator />
+                <MenuItem Header="E_xit" Click="ExitMenuItem_Click" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="{x:Static ApplicationCommands.Undo}" CommandTarget="{Binding ElementName=Editor}" />
+                <MenuItem Header="_Redo" Command="{x:Static ApplicationCommands.Redo}" CommandTarget="{Binding ElementName=Editor}" />
+                <Separator />
+                <MenuItem Header="Cu_t" Command="{x:Static ApplicationCommands.Cut}" CommandTarget="{Binding ElementName=Editor}" />
+                <MenuItem Header="_Copy" Command="{x:Static ApplicationCommands.Copy}" CommandTarget="{Binding ElementName=Editor}" />
+                <MenuItem Header="_Paste" Command="{x:Static ApplicationCommands.Paste}" CommandTarget="{Binding ElementName=Editor}" />
+                <MenuItem Header="Paste as new _entry" InputGestureText="Ctrl+Shift+V" Command="{x:Static local:MainWindow.PasteEntry}" />
+                <Separator />
+                <MenuItem Header="Select _all" Command="{x:Static ApplicationCommands.SelectAll}" CommandTarget="{Binding ElementName=Editor}" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Auto-capture" InputGestureText="Ctrl+Shift+A" IsCheckable="True"
+                          IsChecked="{Binding IsChecked, ElementName=CaptureToggle}" />
+                <MenuItem Header="Always on _top" InputGestureText="Ctrl+Shift+T" IsCheckable="True"
+                          IsChecked="{Binding IsChecked, ElementName=TopmostToggle}" />
+                <MenuItem Header="_Preview" InputGestureText="Ctrl+Shift+P" IsCheckable="True"
+                          IsChecked="{Binding IsChecked, ElementName=PreviewToggle}" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="Check for _updates" Click="UpdateMenuItem_Click" />
+                <Separator />
+                <MenuItem Header="_About ClipboardCollector" Click="AboutMenuItem_Click" />
+            </MenuItem>
+        </Menu>
 
-        <!-- Command bar -->
-        <DockPanel Grid.Row="0" Margin="0,0,0,8" LastChildFill="False">
-            <ToggleButton x:Name="CaptureToggle" DockPanel.Dock="Left" Style="{StaticResource BarToggle}"
-                          Checked="CaptureToggle_Changed" Unchecked="CaptureToggle_Changed"
-                          ToolTip="Automatically add text copied anywhere in Windows (Ctrl+Shift+A)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="CaptureGlyph" Style="{StaticResource Glyph}" />
-                    <TextBlock Margin="8,0,0,0" Text="Auto-capture" VerticalAlignment="Center" />
-                </StackPanel>
-            </ToggleButton>
+        <Grid Margin="12,4,12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <Button DockPanel.Dock="Left" Style="{StaticResource BarButton}" Margin="6,0,2,0"
-                    Command="{x:Static local:MainWindow.PasteEntry}"
-                    ToolTip="Add the clipboard text as a new entry at the end (Ctrl+Shift+V)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Glyph}" Text="&#xE77F;" />
-                    <TextBlock Margin="8,0,0,0" Text="Paste entry" VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
+            <!-- Command bar -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                <!-- Right side stays put; the left side wraps onto a second row in narrow windows -->
+                <ToggleButton x:Name="TopmostToggle" DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}"
+                              VerticalAlignment="Top" Margin="0,2,0,0"
+                              Checked="TopmostToggle_Changed" Unchecked="TopmostToggle_Changed"
+                              ToolTip="Keep the window on top of other windows (Ctrl+Shift+T)"
+                              Content="Always on top" />
 
-            <Rectangle DockPanel.Dock="Left" Width="1" Height="20" Margin="8,0" Opacity="0.5"
-                       Fill="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
+                <ToggleButton x:Name="PreviewToggle" DockPanel.Dock="Right" Style="{StaticResource BarToggle}"
+                              VerticalAlignment="Top" Margin="4,0,2,2"
+                              Checked="PreviewToggle_Changed" Unchecked="PreviewToggle_Changed"
+                              ToolTip="Show the formatted Markdown beside the editor (Ctrl+Shift+P)">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE8A1;" />
+                        <TextBlock Margin="6,0,0,0" Text="Preview" VerticalAlignment="Center" />
+                    </StackPanel>
+                </ToggleButton>
 
-            <Button DockPanel.Dock="Left" Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.New}"
-                    ToolTip="Start a new collection (Ctrl+N)">
-                <TextBlock Style="{StaticResource Glyph}" Text="&#xE8A5;" />
-            </Button>
-            <Button DockPanel.Dock="Left" Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.Open}"
-                    ToolTip="Open a Markdown or text file (Ctrl+O)">
-                <TextBlock Style="{StaticResource Glyph}" Text="&#xE8E5;" />
-            </Button>
-            <Button DockPanel.Dock="Left" Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.Save}"
-                    ToolTip="Save (Ctrl+S)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Glyph}" Text="&#xE74E;" />
-                    <TextBlock Margin="8,0,0,0" Text="Save" VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
-            <Button x:Name="ExportPdfButton" DockPanel.Dock="Left" Style="{StaticResource BarButton}"
-                    Command="{x:Static local:MainWindow.ExportPdf}" ToolTip="Export as PDF (Ctrl+P)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Glyph}" Text="&#xEA90;" />
-                    <TextBlock Margin="8,0,0,0" Text="PDF" VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
+                <WrapPanel>
+                    <ToggleButton x:Name="CaptureToggle" Style="{StaticResource BarToggle}"
+                                  Checked="CaptureToggle_Changed" Unchecked="CaptureToggle_Changed"
+                                  ToolTip="Automatically add text copied anywhere in Windows (Ctrl+Shift+A)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="CaptureGlyph" Style="{StaticResource Glyph}" />
+                            <TextBlock Margin="6,0,0,0" Text="Auto-capture" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
 
-            <!-- Right side -->
-            <Button x:Name="MoreButton" DockPanel.Dock="Right" Style="{StaticResource BarButton}" Margin="0"
-                    Click="MoreButton_Click" ToolTip="More options">
-                <TextBlock Style="{StaticResource Glyph}" Text="&#xE712;" />
-                <Button.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Save as…" InputGestureText="Ctrl+Shift+S" Click="SaveAsMenuItem_Click" />
-                        <Separator />
-                        <MenuItem Header="Check for updates" Click="UpdateMenuItem_Click" />
-                    </ContextMenu>
-                </Button.ContextMenu>
-            </Button>
+                    <Button Style="{StaticResource BarButton}" Margin="6,0,2,2"
+                            Command="{x:Static local:MainWindow.PasteEntry}"
+                            ToolTip="Add the clipboard text as a new entry at the end (Ctrl+Shift+V)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Glyph}" Text="&#xE77F;" />
+                            <TextBlock Margin="6,0,0,0" Text="Paste entry" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
-            <ToggleButton x:Name="TopmostToggle" DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}" Margin="0,0,6,0"
-                          Checked="TopmostToggle_Changed" Unchecked="TopmostToggle_Changed"
-                          ToolTip="Keep the window on top of other windows (Ctrl+Shift+T)"
-                          Content="Always on top" />
+                    <Rectangle Width="1" Height="20" Margin="6,0" Opacity="0.5"
+                               Fill="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
 
-            <ToggleButton x:Name="PreviewToggle" DockPanel.Dock="Right" Style="{StaticResource BarToggle}"
-                          Checked="PreviewToggle_Changed" Unchecked="PreviewToggle_Changed"
-                          ToolTip="Show the formatted Markdown beside the editor (Ctrl+Shift+P)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource Glyph}" Text="&#xE8A1;" />
-                    <TextBlock Margin="8,0,0,0" Text="Preview" VerticalAlignment="Center" />
-                </StackPanel>
-            </ToggleButton>
-        </DockPanel>
+                    <Button Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.New}"
+                            ToolTip="Start a new collection (Ctrl+N)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Glyph}" Text="&#xE8A5;" />
+                            <TextBlock Margin="6,0,0,0" Text="New" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.Open}"
+                            ToolTip="Open a Markdown or text file (Ctrl+O)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Glyph}" Text="&#xE8E5;" />
+                            <TextBlock Margin="6,0,0,0" Text="Open" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.Save}"
+                            ToolTip="Save (Ctrl+S)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Glyph}" Text="&#xE74E;" />
+                            <TextBlock Margin="6,0,0,0" Text="Save" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ExportPdfButton" Style="{StaticResource BarButton}"
+                            Command="{x:Static local:MainWindow.ExportPdf}" ToolTip="Export as PDF (Ctrl+P)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Glyph}" Text="&#xEA90;" />
+                            <TextBlock Margin="6,0,0,0" Text="PDF" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
-        <!-- Editor and optional preview -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="200" />
-                <ColumnDefinition x:Name="SplitterColumn" Width="0" />
-                <ColumnDefinition x:Name="PreviewColumn" Width="0" />
-            </Grid.ColumnDefinitions>
+                </WrapPanel>
+            </DockPanel>
 
-            <TextBox x:Name="Editor" Grid.Column="0"
-                     AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap"
-                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
-                     VerticalContentAlignment="Top"
-                     FontFamily="Cascadia Mono, Cascadia Code, Consolas" FontSize="14"
-                     Padding="12,10"
-                     TextChanged="Editor_TextChanged" />
+            <!-- Editor and optional preview -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="200" />
+                    <ColumnDefinition x:Name="SplitterColumn" Width="0" />
+                    <ColumnDefinition x:Name="PreviewColumn" Width="0" />
+                </Grid.ColumnDefinitions>
 
-            <GridSplitter x:Name="PreviewSplitter" Grid.Column="1" Width="8" HorizontalAlignment="Stretch"
-                          Background="Transparent" ResizeBehavior="PreviousAndNext" Visibility="Collapsed" />
+                <TextBox x:Name="Editor" Grid.Column="0"
+                         AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                         VerticalContentAlignment="Top"
+                         FontFamily="Cascadia Mono, Cascadia Code, Consolas" FontSize="14"
+                         Padding="12,10"
+                         TextChanged="Editor_TextChanged" />
 
-            <Border x:Name="PreviewBorder" Grid.Column="2" Visibility="Collapsed" CornerRadius="4"
-                    BorderThickness="1" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
-                <wv2:WebView2 x:Name="PreviewView" DefaultBackgroundColor="Transparent" />
-            </Border>
+                <GridSplitter x:Name="PreviewSplitter" Grid.Column="1" Width="8" HorizontalAlignment="Stretch"
+                              Background="Transparent" ResizeBehavior="PreviousAndNext" Visibility="Collapsed" />
+
+                <Border x:Name="PreviewBorder" Grid.Column="2" Visibility="Collapsed" CornerRadius="4"
+                        BorderThickness="1" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
+                    <wv2:WebView2 x:Name="PreviewView" DefaultBackgroundColor="Transparent" />
+                </Border>
+            </Grid>
+
+            <!-- Status bar -->
+            <DockPanel Grid.Row="2" Margin="2,6,2,8">
+                <Ellipse x:Name="CaptureDot" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="CountStatus" DockPanel.Dock="Right" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Name="CaptureStatus" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
         </Grid>
-
-        <!-- Status bar -->
-        <DockPanel Grid.Row="2" Margin="2,6,2,8">
-            <Ellipse x:Name="CaptureDot" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center" />
-            <TextBlock x:Name="CountStatus" DockPanel.Dock="Right" VerticalAlignment="Center"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-            <TextBlock x:Name="CaptureStatus" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        </DockPanel>
-    </Grid>
+    </DockPanel>
 </Window>

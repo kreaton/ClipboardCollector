@@ -286,15 +286,6 @@ public partial class MainWindow : Window
     private void ToggleTopmost_Executed(object sender, ExecutedRoutedEventArgs e) =>
         TopmostToggle.IsChecked = TopmostToggle.IsChecked != true;
 
-
-    private void MoreButton_Click(object sender, RoutedEventArgs e)
-    {
-        var menu = MoreButton.ContextMenu;
-        menu.PlacementTarget = MoreButton;
-        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        menu.IsOpen = true;
-    }
-
     #endregion
 
     #region Preview and PDF
@@ -490,7 +481,6 @@ public partial class MainWindow : Window
 
     private void Save_Executed(object sender, ExecutedRoutedEventArgs e) => Save(saveAs: false);
     private void SaveAs_Executed(object sender, ExecutedRoutedEventArgs e) => Save(saveAs: true);
-    private void SaveAsMenuItem_Click(object sender, RoutedEventArgs e) => Save(saveAs: true);
 
     /// <returns>true if the text was written</returns>
     private bool Save(bool saveAs)
@@ -590,6 +580,16 @@ public partial class MainWindow : Window
         var words = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
         var captured = _capturedCount == 1 ? "1 entry" : $"{_capturedCount} entries";
         CountStatus.Text = $"{captured} added  ·  {words:N0} words  ·  {text.Length:N0} chars";
+    }
+
+    private void ExitMenuItem_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        var version = _updateManager.CurrentVersion?.ToString() ?? "development build";
+        MessageBox.Show(this,
+            $"ClipboardCollector {version}\n\nCollects text you copy into one Markdown document.\n{RepoUrl}",
+            "About ClipboardCollector", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void UpdateMenuItem_Click(object sender, RoutedEventArgs e)

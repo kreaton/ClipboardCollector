@@ -15,13 +15,13 @@
         <Style x:Key="BarButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Margin" Value="0,0,2,0" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Margin" Value="0,0,2,2" />
         </Style>
 
         <Style x:Key="BarToggle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Margin" Value="0,0,2,0" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Margin" Value="0,0,2,2" />
         </Style>
 
         <!-- Windows 11 toggle switch (WPF's Fluent theme has none); content is the label -->
@@ -33,9 +33,9 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border Background="{TemplateBinding Background}" Padding="6,4" CornerRadius="4">
+                        <Border Background="{TemplateBinding Background}" Padding="4" CornerRadius="4">
                             <StackPanel Orientation="Horizontal">
-                                <ContentPresenter VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <ContentPresenter VerticalAlignment="Center" Margin="0,0,8,0" />
                                 <Grid Width="40" Height="20" VerticalAlignment="Center">
                                     <Border x:Name="Track" CornerRadius="10" BorderThickness="1"
                                             Background="{DynamicResource ControlAltFillColorSecondaryBrush}"
