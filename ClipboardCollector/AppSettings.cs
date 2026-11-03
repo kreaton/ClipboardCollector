@@ -19,7 +19,6 @@ internal sealed class AppSettings
 
     public bool AutoCapture { get; set; } = true;
     public bool AlwaysOnTop { get; set; }
-    public bool InsertSeparator { get; set; }
     public bool ShowPreview { get; set; }
 
     // Window placement; null means "let Windows decide"

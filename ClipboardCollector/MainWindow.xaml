@@ -93,9 +93,6 @@
                     <ContextMenu>
                         <MenuItem Header="Save as…" InputGestureText="Ctrl+Shift+S" Click="SaveAsMenuItem_Click" />
                         <Separator />
-                        <MenuItem x:Name="SeparatorMenuItem" Header="Insert --- between entries" IsCheckable="True"
-                                  Click="SeparatorMenuItem_Click" />
-                        <Separator />
                         <MenuItem Header="Check for updates" Click="UpdateMenuItem_Click" />
                     </ContextMenu>
                 </Button.ContextMenu>

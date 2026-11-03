@@ -85,7 +85,6 @@ public partial class MainWindow : Window
 
         CaptureToggle.IsChecked = _settings.AutoCapture;
         TopmostToggle.IsChecked = _settings.AlwaysOnTop;
-        SeparatorMenuItem.IsChecked = _settings.InsertSeparator;
         UpdateCaptureUi();
         UpdateTitle();
         UpdateCounts();
@@ -188,14 +187,15 @@ public partial class MainWindow : Window
     {
         var current = Editor.Text;
         var prefix = "";
-        if (current.Length > 0)
+        var trimmed = current.TrimEnd();
+        if (trimmed.Length > 0)
         {
-            // Make sure the new entry starts after a blank line (and a rule, if wanted)
-            var trimmed = current.TrimEnd('\r', '\n');
-            var trailing = current.Substring(trimmed.Length);
+            // Separate entries with a Markdown rule. It needs a blank line above, or Markdown
+            // would read the "---" as underlining the previous line into a heading.
+            var trailing = current.Substring(current.TrimEnd('\r', '\n').Length);
             var newlines = trailing.Count(c => c == '\n');
             prefix = new string('\n', Math.Max(0, 2 - newlines)).Replace("\n", Environment.NewLine);
-            if (_settings.InsertSeparator)
+            if (!trimmed.EndsWith("---"))
                 prefix += "---" + Environment.NewLine + Environment.NewLine;
         }
 
@@ -286,11 +286,6 @@ public partial class MainWindow : Window
     private void ToggleTopmost_Executed(object sender, ExecutedRoutedEventArgs e) =>
         TopmostToggle.IsChecked = TopmostToggle.IsChecked != true;
 
-    private void SeparatorMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        _settings.InsertSeparator = SeparatorMenuItem.IsChecked;
-        _settings.Save();
-    }
 
     private void MoreButton_Click(object sender, RoutedEventArgs e)
     {

@@ -18,7 +18,7 @@ ClipboardListener.
 | **PDF**: export the formatted document as a PDF | Ctrl+P |
 | New / Open / Save / Save as | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |
 
-- Entries are separated by a blank line, or by a `---` rule (*More* menu)
+- Each new entry is separated from the previous one by a `---` Markdown rule
 - Copies made while ClipboardCollector is in front (from the editor, the preview or a dialog)
   are never captured; a duplicate update within one second (some "copy" buttons fire twice)
   is ignored
