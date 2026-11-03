@@ -85,24 +85,8 @@
             </Grid.RowDefinitions>
 
             <!-- Command bar -->
+            <!-- Wraps onto a second row in narrow windows -->
             <DockPanel Grid.Row="0" Margin="0,0,0,6">
-                <!-- Right side stays put; the left side wraps onto a second row in narrow windows -->
-                <ToggleButton x:Name="TopmostToggle" DockPanel.Dock="Right" Style="{StaticResource ToggleSwitch}"
-                              VerticalAlignment="Top" Margin="0,2,0,0"
-                              Checked="TopmostToggle_Changed" Unchecked="TopmostToggle_Changed"
-                              ToolTip="Keep the window on top of other windows (Ctrl+Shift+T)"
-                              Content="Always on top" />
-
-                <ToggleButton x:Name="PreviewToggle" DockPanel.Dock="Right" Style="{StaticResource BarToggle}"
-                              VerticalAlignment="Top" Margin="4,0,2,2"
-                              Checked="PreviewToggle_Changed" Unchecked="PreviewToggle_Changed"
-                              ToolTip="Show the formatted Markdown beside the editor (Ctrl+Shift+P)">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE8A1;" />
-                        <TextBlock Margin="6,0,0,0" Text="Preview" VerticalAlignment="Center" />
-                    </StackPanel>
-                </ToggleButton>
-
                 <WrapPanel>
                     <ToggleButton x:Name="CaptureToggle" Style="{StaticResource BarToggle}"
                                   Checked="CaptureToggle_Changed" Unchecked="CaptureToggle_Changed"
@@ -122,7 +106,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Rectangle Width="1" Height="20" Margin="6,0" Opacity="0.5"
+                    <Rectangle Width="1" Height="20" Margin="4,0" Opacity="0.5"
                                Fill="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
 
                     <Button Style="{StaticResource BarButton}" Command="{x:Static ApplicationCommands.New}"
@@ -154,6 +138,21 @@
                         </StackPanel>
                     </Button>
 
+                    <Rectangle Width="1" Height="20" Margin="4,0" Opacity="0.5"
+                               Fill="{DynamicResource ControlStrongStrokeColorDefaultBrush}" />
+
+                    <ToggleButton x:Name="PreviewToggle" Style="{StaticResource BarToggle}"
+                                  Checked="PreviewToggle_Changed" Unchecked="PreviewToggle_Changed"
+                                  ToolTip="Show the formatted Markdown beside the editor (Ctrl+Shift+P)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Glyph}" Text="&#xE8A1;" />
+                            <TextBlock Margin="6,0,0,0" Text="Preview" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+                    <ToggleButton x:Name="TopmostToggle" Style="{StaticResource ToggleSwitch}" Margin="0,0,0,2"
+                                  Checked="TopmostToggle_Changed" Unchecked="TopmostToggle_Changed"
+                                  ToolTip="Keep the window on top of other windows (Ctrl+Shift+T)"
+                                  Content="Always on top" />
                 </WrapPanel>
             </DockPanel>
 
