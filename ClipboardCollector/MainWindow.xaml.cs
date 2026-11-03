@@ -87,7 +87,6 @@ public partial class MainWindow : Window
         TopmostToggle.IsChecked = _settings.AlwaysOnTop;
         SeparatorMenuItem.IsChecked = _settings.InsertSeparator;
         UpdateCaptureUi();
-        UpdateTopmostUi();
         UpdateTitle();
         UpdateCounts();
 
@@ -282,14 +281,10 @@ public partial class MainWindow : Window
         Topmost = TopmostToggle.IsChecked == true;
         _settings.AlwaysOnTop = Topmost;
         _settings.Save();
-        UpdateTopmostUi();
     }
 
     private void ToggleTopmost_Executed(object sender, ExecutedRoutedEventArgs e) =>
         TopmostToggle.IsChecked = TopmostToggle.IsChecked != true;
-
-    private void UpdateTopmostUi() =>
-        TopmostGlyph.Text = TopmostToggle.IsChecked == true ? "" : ""; // Pinned / Pin
 
     private void SeparatorMenuItem_Click(object sender, RoutedEventArgs e)
     {

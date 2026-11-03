@@ -13,7 +13,7 @@ ClipboardListener.
 | --- | --- |
 | **Auto-capture** toggle: add everything copied anywhere in Windows, or pause | Ctrl+Shift+A |
 | **Paste entry**: add the clipboard as a new entry at the end (works while paused) | Ctrl+Shift+V |
-| **Always on top** (pin button) | Ctrl+Shift+T |
+| **Always on top** switch | Ctrl+Shift+T |
 | **Preview**: formatted Markdown beside the editor, updated as you type | Ctrl+Shift+P |
 | **PDF**: export the formatted document as a PDF | Ctrl+P |
 | New / Open / Save / Save as | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |
