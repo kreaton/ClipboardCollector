@@ -58,3 +58,7 @@ or open *Help → About*, for the full build, for example `v1.0.42 · 2026-11-03
   `-p:BuildNumber=…`; local builds use 0.
 - **The commit** is added by the .NET SDK from git. The build time is stamped in by
   `Directory.Build.props`, and `ClipboardCollector/BuildInfo.cs` puts it all together.
+
+## Releases
+
+Every push to `main` builds the app on GitHub Actions and publishes a new release, one patch version higher than the last (`.github/workflows/release.yml`). Installed copies pick it up through Check for updates. You can also start a release by hand from the repository's Actions tab.
