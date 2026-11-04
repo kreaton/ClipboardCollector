@@ -25,19 +25,16 @@ if (-not $LocalOnly) {
 }
 
 # Major.Minor comes from Directory.Build.props; the patch is one higher than the last release
-# with that Major.Minor (releases.win.json is written by vpk), or 0 for the first one.
+# with that Major.Minor, or 0 for the first one. It is read from the full package's file name
+# because vpk download only fetches the package: a clean Releases folder has no releases.win.json.
 $majorMinor = ([xml](Get-Content -Path "..\Directory.Build.props" -Raw)).Project.PropertyGroup.MajorMinor
 $buildNumber = 0
-$releasesFile = Join-Path $ReleasesDir "releases.win.json"
-if (Test-Path $releasesFile) {
-    $last = (Get-Content -Path $releasesFile -Raw | ConvertFrom-Json).Assets
-        | Where-Object { $_.Type -eq 'Full' }
-        | ForEach-Object { [version]$_.Version }
-        | Where-Object { "$($_.Major).$($_.Minor)" -eq $majorMinor }
-        | Sort-Object -Descending
-        | Select-Object -First 1
-    if ($last) { $buildNumber = $last.Build + 1 }
-}
+$last = Get-ChildItem -Path $ReleasesDir -Filter "$AppName-*-full.nupkg" -ErrorAction SilentlyContinue
+    | ForEach-Object { [version]($_.Name -replace "^$AppName-|-full\.nupkg$") }
+    | Where-Object { "$($_.Major).$($_.Minor)" -eq $majorMinor }
+    | Sort-Object -Descending
+    | Select-Object -First 1
+if ($last) { $buildNumber = $last.Build + 1 }
 $newVersion = "$majorMinor.$buildNumber"
 
 Write-Host "Publishing $AppName version $newVersion (framework-dependent, win-x64)"
@@ -47,7 +44,7 @@ if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 
 Write-Host "Packing $AppName version $newVersion with Velopack"
 # --framework makes Setup.exe install the .NET 10 Desktop Runtime if it is missing
-vpk pack -u $AppName -v $newVersion -p $PublishDir -e "$AppName.exe" -o $ReleasesDir --icon .\app.ico --framework net10.0-x64-desktop
+vpk pack -u $AppName -v $newVersion -p $PublishDir -e "$AppName.exe" -o $ReleasesDir --icon .\app.ico --runtime win-x64 --framework net10.0-x64-desktop
 if ($LASTEXITCODE -ne 0) { throw "vpk pack failed" }
 
 if (-not $LocalOnly) {
