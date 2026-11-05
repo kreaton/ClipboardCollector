@@ -1,6 +1,16 @@
 # ClipboardCollector
 
-Gather everything you copy into one document. ClipboardCollector is made for saving answers from AI chats in the browser, but it works with text copied from anywhere. Copy as you go, then edit the result and save it as Markdown or export it as a PDF.
+[![Release](https://img.shields.io/github/v/release/kreaton/ClipboardCollector)](https://github.com/kreaton/ClipboardCollector/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![Windows](https://img.shields.io/badge/platform-Windows-lightgrey)
+![.NET 10](https://img.shields.io/badge/.NET-10-lightgrey)
+![WPF](https://img.shields.io/badge/UI-WPF-lightgrey)
+
+![ClipboardCollector: copy as you go and keep it all in one document](images/banner.png)
+
+**Gather everything you copy into one document.**
+
+ClipboardCollector is made for saving answers from AI chats in the browser, but it works with text copied from anywhere. Copy as you go, then edit the result and save it as Markdown or export it as a PDF.
 
 ## Install
 
