@@ -77,3 +77,9 @@ Versions look like **1.0.42**, and the full build reads like `v1.0.42 · 2026-11
 - **Major.Minor** is set by hand with `<MajorMinor>` in [`Directory.Build.props`](Directory.Build.props). Raise it for bigger changes.
 - **The last number** is worked out by `BuildRelease.ps1`: one higher than the latest release with the same Major.Minor, or 0 for the first. It's passed to the build as `-p:BuildNumber=…`, and local builds use 0.
 - **The commit** is added by the .NET SDK from git. The build time is stamped in by `Directory.Build.props`, and `ClipboardCollector/BuildInfo.cs` puts it all together.
+
+## License & Authorship
+
+This project is distributed under the terms of the [MIT License](LICENSE).
+
+**AI authorship note:** Most of the source code in this repository was generated with AI coding agents (Claude Code), under my direction and review. Purely AI-generated material may not be eligible for copyright protection in some jurisdictions. To the extent any part of this project is protected by copyright, it is licensed under the MIT License, and the license's warranty and liability disclaimers apply to the project as a whole.
