@@ -5,6 +5,9 @@
 ![Windows](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![.NET 10](https://img.shields.io/badge/.NET-10-lightgrey)
 ![WPF](https://img.shields.io/badge/UI-WPF-lightgrey)
+[![GitHub stars](https://img.shields.io/github/stars/kreaton/ClipboardCollector?style=flat&logo=github&color=yellow)](https://github.com/kreaton/ClipboardCollector/stargazers)
+
+⭐ If ClipboardCollector earns a place on your machine, [star it on GitHub](https://github.com/kreaton/ClipboardCollector) — it's free, made by one developer, and stars are how other people find it.
 
 ![ClipboardCollector: copy as you go and keep it all in one document](images/banner.png)
 
