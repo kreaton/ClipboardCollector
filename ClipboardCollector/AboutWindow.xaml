@@ -1,7 +1,7 @@
 <Window x:Class="ClipboardCollector.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="About ClipboardCollector"
+        Title="About Clipboard Collector"
         Icon="app.ico"
         SizeToContent="WidthAndHeight" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
@@ -10,7 +10,7 @@
             <Image x:Name="AppIcon" Width="64" Height="64" VerticalAlignment="Top"
                    RenderOptions.BitmapScalingMode="HighQuality" />
             <StackPanel Margin="18,2,0,0" VerticalAlignment="Center">
-                <TextBlock Text="ClipboardCollector" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Clipboard Collector" FontSize="22" FontWeight="SemiBold" />
                 <TextBlock x:Name="VersionText" Margin="0,2,0,0"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            ToolTip="Version · build time · commit" />

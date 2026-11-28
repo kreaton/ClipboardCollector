@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Product>ClipboardCollector</Product>
+    <Product>Clipboard Collector</Product>
     <Copyright>Copyright © 2026 Per Hejndorf</Copyright>
     <!-- The version is set in Directory.Build.props. -->
     <!-- Velopack's Program.Main replaces the generated WPF entry point -->

@@ -45,7 +45,7 @@ if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 
 Write-Host "Packing $AppName version $newVersion with Velopack"
 # --framework makes Setup.exe install the .NET 10 Desktop Runtime if it is missing
-vpk pack -u $AppName -v $newVersion -p $PublishDir -e "$AppName.exe" -o $ReleasesDir --icon .\app.ico --runtime win-x64 --framework net10.0-x64-desktop
+vpk pack -u $AppName --packTitle "Clipboard Collector" -v $newVersion -p $PublishDir -e "$AppName.exe" -o $ReleasesDir --icon .\app.ico --runtime win-x64 --framework net10.0-x64-desktop
 if ($LASTEXITCODE -ne 0) { throw "vpk pack failed" }
 
 if (-not $LocalOnly) {

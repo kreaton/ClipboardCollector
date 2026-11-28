@@ -45,7 +45,7 @@ public partial class MainWindow : Window
 
     private readonly UpdateManager _updateManager = new(new GithubSource(RepoUrl, accessToken: null, prerelease: false));
     private readonly AppSettings _settings = AppSettings.Load();
-    private const string _baseTitle = "ClipboardCollector";
+    private const string _baseTitle = "Clipboard Collector";
 
     private HwndSource? _hwndSource;
     private string? _currentFile;
